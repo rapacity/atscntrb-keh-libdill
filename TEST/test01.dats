@@ -5,7 +5,7 @@
 #include "share/atspre_define.hats"
 
 staload UN = "prelude/SATS/unsafe.sats"
-staload "../SATS/libdill.sats"
+staload "./../SATS/libdill.sats"
 
 
 
@@ -21,11 +21,11 @@ in end
 
 
 implement main0() = let
-  val cr1 = make_coroutine(lam () => worker(4, "a"))
+  val cr1 = go(worker(4, "a"))
   val ()  = assertloc(cr1 >= 0)
-  val cr2 = make_coroutine(lam () => worker(2, "b"))
+  val cr2 = go(worker(2, "b"))
   val ()  = assertloc(cr2 >= 0)
-  val cr3 = make_coroutine(lam () => worker(3, "c"))
+  val cr3 = go(worker(3, "c"))
   val ()  = assertloc(cr3 >= 0)
   val rc  = msleep(now() + 100LL)
   val ()  = assertloc(rc = 0)

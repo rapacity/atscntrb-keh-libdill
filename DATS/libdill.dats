@@ -2,38 +2,35 @@
 staload UN = "prelude/SATS/unsafe.sats"
 staload "./../SATS/libdill.sats"
 
-implement (a) chmakes<a>() =
-  chmake(sizeof<a>)
 
-implement (a) chsends<a>(ch,v) =
-  chsend(ch, v, sizeof<a>, ~1LL)
+implement chmake_boxed<>() = chmake(sizeof<ptr>)
 
-implement (a) chrecvs<a>(ch,v) =
-  chrecv(ch, v, sizeof<a>, ~1LL)
-
-implement chrecvs_ptr<>(ch) = let
+implement (a) chrecv_boxed<a>(ch) = let
   var p : ptr
-  val s = chrecvp(ch, addr@p, sizeof<ptr>, ~1LL)
-in
-  (s, p) 
+  val n = chrecv(ch, p, sizeof<ptr>, ~1ll)
+in 
+  if n <> 0 then
+    None_vt() // recv fail
+  else let
+      val~linbox(v) = $UN.ptr0_get<linbox(a)>(addr@p)
+    in
+      Some_vt(v)
+    end
 end
 
-
-
-implement chsends_ptr<>(ch,v) = let
-  var p : ptr = v
-in
-  chsend(ch, p, sizeof<ptr>, ~1LL)
-end
-
-implement chsends_strptr<>(ch,v) =
-  chsends_ptr(ch,$UN.castvwtp0{ptr}(v))
-
-
-implement chrecvs_strptr<>(ch) = let
-  val (st, p) = chrecvs_ptr(ch) 
-in
-  (st, $UN.castvwtp0{strptr}(p))
+implement (a) chsend_boxed<a>(ch,v) = let
+  var p : ptr = $UN.castvwtp0{ptr}(linbox(v))
+  val n = chsend(ch, p, sizeof<ptr>, ~1ll)
+in 
+  if n <> 0 then let
+      // if b failed to send, then b is still preserved, the user is tasked
+      // with freeing it.
+      val~linbox(v) = $UN.castvwtp1{linbox(a)}(p)
+    in
+      Some_vt(v)
+    end
+  else
+    None_vt()
 end
 
 
