@@ -1,6 +1,6 @@
 {
   "name": "atscntrb-keh-libdill",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "ATS bindings for libdill",
   "main": "index.js",
   "scripts": {
